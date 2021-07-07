@@ -117,7 +117,7 @@ class LiteCache(object):
         row = cursor.fetchone()
 
         # Do we have a result? Load it
-        if row:
+        if row is not None:
             result = pickle.loads(row[0])
 
         # Ran into our sentinel?
