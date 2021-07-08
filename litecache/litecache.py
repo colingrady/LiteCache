@@ -59,17 +59,16 @@ class LiteCache(object):
         '''
 
         # Allow ttl to be overridden
-        effective_ttl = self.ttl
-        if ttl is not None:
-            assert isinstance(ttl, int)
-            effective_ttl = ttl
+        ttl = ttl or self.ttl
+
+        assert isinstance(ttl, int)
 
         # No ttl?
-        if not effective_ttl:
+        if ttl == 0:
             return 0
 
         # Return calculated earliest time for last_seen
-        return self._now() - effective_ttl
+        return self._now() - ttl
 
     @property
     def _connection(self):
