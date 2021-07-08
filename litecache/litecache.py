@@ -3,7 +3,7 @@ import pickle
 import sqlite3
 
 
-SECONDS_IN_DAY = 86400
+ONE_DAY_SECS = 86400
 
 SQL_TABLE_CREATE = 'CREATE TABLE IF NOT EXISTS `litecache` (`key` TEXT UNIQUE, `value` BLOB, `last_seen` INTEGER, PRIMARY KEY(`key`)) WITHOUT ROWID;'
 SQL_INDEX_CREATE = 'CREATE INDEX IF NOT EXISTS `last_seen_idx` ON `litecache` (`last_seen`);'
@@ -19,19 +19,19 @@ class NotSet:
 
 class LiteCache(object):
 
-    def __init__(self, cache_db=None, age_out=30):
+    def __init__(self, cache_db=None, ttl=(ONE_DAY_SECS * 14)):
 
         # Get the cache file
         cache_db = cache_db or ':memory:'
 
         # Validation
         assert isinstance(cache_db, str)
-        assert isinstance(age_out, int)
+        assert isinstance(ttl, int)
 
         # Save the details
         self._db = cache_db
         self._conn = None
-        self.age_out = age_out
+        self.ttl = ttl
 
     def __del__(self):
         '''
@@ -60,12 +60,12 @@ class LiteCache(object):
         Return the earliest last_seen time for an entry to be returned
         '''
 
-        # No age_out?
-        if not self.age_out:
+        # No ttl?
+        if not self.ttl:
             return 0
 
         # Return calculated earliest time for last_seen
-        return self._now - (self.age_out * SECONDS_IN_DAY)
+        return self._now - self.ttl
 
     @property
     def _connection(self):
