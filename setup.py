@@ -4,8 +4,8 @@ from setuptools import setup, find_packages
 
 setup(
     name='LiteCache',
-    version='1.20210707.0',
-    description='A Python SQLite-backed key-value cache with data age-out',
+    version='1.20210708.0',
+    description='A Python SQLite-backed key-value cache with data ttl',
     author='Colin Grady',
     author_email='colin@grady.us',
     url='https://github.com/colingrady/LiteCache',

@@ -1,6 +1,6 @@
 # LiteCache
 
-A Python SQLite-backed key-value cache with data age-out
+A Python SQLite-backed key-value cache with data ttl
 
 ## Example of Usage
 
@@ -8,7 +8,7 @@ A Python SQLite-backed key-value cache with data age-out
 ```python
 >>> from litecache import LiteCache
 >>>
->>> cache = LiteCache('test.db', age_out=15)  # age_out is days
+>>> cache = LiteCache('test.db', ttl=600)  # ttl is seconds
 ```
 
 **Checking for Key**
