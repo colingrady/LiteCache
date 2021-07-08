@@ -3,7 +3,9 @@ import pickle
 import sqlite3
 
 
-ONE_DAY_SECS = 86400
+ONE_DAY_SECONDS = 24 * 60 * 60
+DEFAULT_TTL = ONE_DAY_SECONDS * 14
+
 
 SQL_TABLE_CREATE = 'CREATE TABLE IF NOT EXISTS `litecache` (`key` TEXT UNIQUE, `value` BLOB, `last_seen` INTEGER, PRIMARY KEY(`key`)) WITHOUT ROWID;'
 SQL_INDEX_CREATE = 'CREATE INDEX IF NOT EXISTS `last_seen_idx` ON `litecache` (`last_seen`);'
@@ -19,7 +21,7 @@ class NotSet:
 
 class LiteCache(object):
 
-    def __init__(self, cache_db=None, ttl=(ONE_DAY_SECS * 14)):
+    def __init__(self, cache_db=None, ttl=DEFAULT_TTL):
 
         # Get the cache file
         cache_db = cache_db or ':memory:'
