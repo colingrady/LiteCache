@@ -47,25 +47,29 @@ class LiteCache(object):
         '''
         return self.has(key)
 
-    @property
     def _now(self):
         '''
         Return the current epoch time
         '''
         return int(time.time())
 
-    @property
-    def _since(self):
+    def _since(self, ttl=None):
         '''
         Return the earliest last_seen time for an entry to be returned
         '''
 
+        # Allow ttl to be overridden
+        effective_ttl = self.ttl
+        if ttl is not None:
+            assert isinstance(ttl, int)
+            effective_ttl = ttl
+
         # No ttl?
-        if not self.ttl:
+        if not effective_ttl:
             return 0
 
         # Return calculated earliest time for last_seen
-        return self._now - self.ttl
+        return self._now() - effective_ttl
 
     @property
     def _connection(self):
@@ -101,7 +105,7 @@ class LiteCache(object):
         '''
         self._connection.rollback()
 
-    def get(self, key, default=NotSet):
+    def get(self, key, default=NotSet, ttl=None):
         '''
         Get the key value from the cache
         '''
@@ -113,7 +117,7 @@ class LiteCache(object):
         result = default
 
         # Query for the data
-        cursor = self._connection.execute(SQL_GET_KEY_SINCE, (key, self._since))
+        cursor = self._connection.execute(SQL_GET_KEY_SINCE, (key, self._since(ttl)))
         row = cursor.fetchone()
 
         # Do we have a result? Load it
@@ -133,7 +137,7 @@ class LiteCache(object):
         '''
 
         # Get the last_seen time
-        last_seen = last_seen or self._now
+        last_seen = last_seen or self._now()
 
         # Validation
         assert isinstance(key, str)
@@ -143,9 +147,9 @@ class LiteCache(object):
         data = pickle.dumps(value)
 
         # Add the data to the DB
-        self._connection.execute(SQL_ADD_UPDATE_KEY, (key, memoryview(data), last_seen or self._now))
+        self._connection.execute(SQL_ADD_UPDATE_KEY, (key, memoryview(data), last_seen))
 
-    def has(self, key):
+    def has(self, key, ttl=None):
         '''
         Return True/False if a key exists
         '''
@@ -154,7 +158,7 @@ class LiteCache(object):
         assert isinstance(key, str)
 
         # Query for the data
-        cursor = self._connection.execute(SQL_GET_KEY_SINCE, (key, self._since))
+        cursor = self._connection.execute(SQL_GET_KEY_SINCE, (key, self._since(ttl)))
         row = cursor.fetchone()
 
         # Return whether it exists
