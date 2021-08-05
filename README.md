@@ -36,7 +36,7 @@ KeyError: 'test'
 True
 >>> cache.get('test')
 {'test': 1}
->>> cache.set('another', 100)
+>>> cache['another'] = 100
 >>> cache['another']
 100
 ```
