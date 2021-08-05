@@ -3,6 +3,9 @@ import pickle
 import sqlite3
 
 
+__version__ = '21.8.5.0'
+
+
 ONE_DAY_SECONDS = 24 * 60 * 60
 DEFAULT_TTL = ONE_DAY_SECONDS * 14
 
@@ -106,6 +109,21 @@ class LiteCache(object):
         '''
         self._connection.rollback()
 
+    def has(self, key, ttl=None):
+        '''
+        Return True/False if a key exists
+        '''
+
+        # Validation
+        assert isinstance(key, str)
+
+        # Query for the data
+        cursor = self._connection.execute(SQL_GET_KEY_SINCE, (key, self._since(ttl)))
+        row = cursor.fetchone()
+
+        # Return whether it exists
+        return row is not None
+
     def get(self, key, default=NotSet, ttl=None):
         '''
         Get the key value from the cache
@@ -149,21 +167,6 @@ class LiteCache(object):
 
         # Add the data to the DB
         self._connection.execute(SQL_ADD_UPDATE_KEY, (key, memoryview(data), last_seen))
-
-    def has(self, key, ttl=None):
-        '''
-        Return True/False if a key exists
-        '''
-
-        # Validation
-        assert isinstance(key, str)
-
-        # Query for the data
-        cursor = self._connection.execute(SQL_GET_KEY_SINCE, (key, self._since(ttl)))
-        row = cursor.fetchone()
-
-        # Return whether it exists
-        return row is not None
 
     def clear(self):
         '''

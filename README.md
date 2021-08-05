@@ -1,6 +1,6 @@
 # LiteCache
 
-A Python SQLite-backed key-value cache with data ttl
+A Python SQLite-backed key-value cache with data TTL
 
 ## Example of Usage
 
