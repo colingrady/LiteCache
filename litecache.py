@@ -52,6 +52,23 @@ class LiteCache(object):
         '''
         return self.has(key)
 
+    def __getitem__(self, key):
+        '''
+        Get the key value from the cache
+        '''
+
+        # Attempt to get the key
+        res = self.get(key)
+        return res
+
+    def __setitem__(self, key, value):
+        '''
+        Set the key value from the cache
+        '''
+
+        # Attempt to set the key
+        self.set(key, value)
+
     def _now(self):
         '''
         Return the current epoch time

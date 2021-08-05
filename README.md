@@ -25,6 +25,8 @@ False
 KeyError: 'test'
 >>> cache.get('test', 'default')
 'default'
+>>> cache['test']
+KeyError: 'test'
 ```
 
 **Setting a Key-Value Pair**
@@ -34,6 +36,9 @@ KeyError: 'test'
 True
 >>> cache.get('test')
 {'test': 1}
+>>> cache.set('another', 100)
+>>> cache['another']
+100
 ```
 
 **Rolling Back Key Sets**
