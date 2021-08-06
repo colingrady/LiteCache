@@ -1,9 +1,10 @@
 import time
 import pickle
 import sqlite3
+from typing import Any, Optional
 
 
-__version__ = '21.8.5.0'
+__version__ = '21.8.6.0'
 
 
 ONE_DAY_SECONDS = 24 * 60 * 60
@@ -22,21 +23,24 @@ class NotSet:
         return 'NotSet'
 
 
-class LiteCache(object):
+class LiteCache:
 
-    def __init__(self, cache_db=None, ttl=DEFAULT_TTL):
+    def __init__(
+        self,
+        cache_db: Optional[str] = None,
+        ttl: Optional[int] = DEFAULT_TTL
+    ):
 
         # Get the cache file
         cache_db = cache_db or ':memory:'
-
-        # Validation
-        assert isinstance(cache_db, str)
-        assert isinstance(ttl, int)
 
         # Save the details
         self._db = cache_db
         self._conn = None
         self.ttl = ttl
+
+    def __repr__(self) -> str:
+        return f'LiteCache(db={self._db}, ttl={self.ttl})'
 
     def __del__(self):
         '''
@@ -46,13 +50,13 @@ class LiteCache(object):
             self.save()
             self._conn.close()
 
-    def __contains__(self, key):
+    def __contains__(self, key: str) -> bool:
         '''
         Run the exists check
         '''
         return self.has(key)
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str) -> Any:
         '''
         Get the key value from the cache
         '''
@@ -61,7 +65,7 @@ class LiteCache(object):
         res = self.get(key)
         return res
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: str, value: Any):
         '''
         Set the key value from the cache
         '''
@@ -69,21 +73,19 @@ class LiteCache(object):
         # Attempt to set the key
         self.set(key, value)
 
-    def _now(self):
+    def _now(self) -> int:
         '''
         Return the current epoch time
         '''
         return int(time.time())
 
-    def _since(self, ttl=None):
+    def _since(self, ttl: Optional[int] = None) -> int:
         '''
         Return the earliest last_seen time for an entry to be returned
         '''
 
         # Allow ttl to be overridden
         ttl = ttl or self.ttl
-
-        assert isinstance(ttl, int)
 
         # No ttl?
         if ttl == 0:
@@ -93,7 +95,7 @@ class LiteCache(object):
         return self._now() - ttl
 
     @property
-    def _connection(self):
+    def _connection(self) -> sqlite3.Connection:
         '''
         Return the SQLite connection
         '''
@@ -114,25 +116,22 @@ class LiteCache(object):
         # Return the connection
         return self._conn
 
-    def save(self):
+    def save(self) -> None:
         '''
         Commit the cache change
         '''
         self._connection.commit()
 
-    def rollback(self):
+    def rollback(self) -> None:
         '''
         Rollback any changes since the last save/open
         '''
         self._connection.rollback()
 
-    def has(self, key, ttl=None):
+    def has(self, key, ttl: Optional[int] = None) -> bool:
         '''
         Return True/False if a key exists
         '''
-
-        # Validation
-        assert isinstance(key, str)
 
         # Query for the data
         cursor = self._connection.execute(SQL_GET_KEY_SINCE, (key, self._since(ttl)))
@@ -141,15 +140,12 @@ class LiteCache(object):
         # Return whether it exists
         return row is not None
 
-    def get(self, key, default=NotSet, ttl=None):
+    def get(self, key, default: Optional[Any] = NotSet, ttl: Optional[int] = None) -> Any:
         '''
         Get the key value from the cache
         '''
 
-        # Validation
-        assert isinstance(key, str)
-
-        # Set default
+        # Start with the default
         result = default
 
         # Query for the data
@@ -167,7 +163,7 @@ class LiteCache(object):
         # Return the result
         return result
 
-    def set(self, key, value, last_seen=None):
+    def set(self, key: str, value: Any, last_seen: Optional[int] = None) -> None:
         '''
         Set the key value in the cache
         '''
@@ -175,17 +171,13 @@ class LiteCache(object):
         # Get the last_seen time
         last_seen = last_seen or self._now()
 
-        # Validation
-        assert isinstance(key, str)
-        assert isinstance(last_seen, int)
-
         # Pickle the data
         data = pickle.dumps(value)
 
         # Add the data to the DB
         self._connection.execute(SQL_ADD_UPDATE_KEY, (key, memoryview(data), last_seen))
 
-    def clear(self):
+    def clear(self) -> None:
         '''
         Clear the cache (DB)
         '''
