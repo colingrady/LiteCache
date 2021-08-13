@@ -11,7 +11,7 @@ __all__ = [
 ]
 
 
-__version__ = '21.8.13.0'
+__version__ = '21.8.13.1'
 
 
 ONE_DAY_SECONDS = 24 * 60 * 60
@@ -34,34 +34,39 @@ class LiteCache:
 
     # The limited set of attributes used
     __slots__ = [
-        '_db',
         '_conn',
-        'ttl'
+        'db',
+        'ttl',
+        'save_on_exit'
     ]
 
     def __init__(
         self,
         cache_db: Optional[str] = None,
-        ttl: Optional[int] = DEFAULT_TTL
+        ttl: Optional[int] = DEFAULT_TTL,
+        save_on_exit: Optional[bool] = True
     ):
 
         # Get the cache file
         cache_db = cache_db or ':memory:'
 
         # Save the details
-        self._db = cache_db
         self._conn = None
+        self.db = cache_db
         self.ttl = ttl
+        self.save_on_exit = save_on_exit
 
     def __repr__(self) -> str:
-        return f'LiteCache(db={self._db}, ttl={self.ttl})'
+        return (f'LiteCache(db={self.db}, ttl={self.ttl}, '
+                f'save_on_exit={self.save_on_exit})')
 
     def __del__(self):
         '''
-        Save the changes and close the DB connection
+        Close the DB connection cleanly, saving is desired
         '''
         if self._conn:
-            self.save()
+            if self.save_on_exit:
+                self.save()
             self._conn.close()
 
     def __contains__(self, key: str) -> bool:
@@ -118,7 +123,7 @@ class LiteCache:
         if not self._conn:
 
             # Open the connection
-            self._conn = sqlite3.connect(self._db, timeout=30)
+            self._conn = sqlite3.connect(self.db, timeout=30)
 
             # Ensure the table and index have been created
             self._conn.execute(SQL_TABLE_CREATE)

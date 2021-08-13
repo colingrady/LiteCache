@@ -8,7 +8,13 @@ A Python SQLite-backed key-value cache with data TTL
 ```python
 >>> from litecache import LiteCache
 >>>
+>>> cache = LiteCache()
+>>> cache
+LiteCache(db=:memory:, ttl=1209600, save_on_exit:True)
+>>>
 >>> cache = LiteCache('test.db', ttl=600)  # ttl is seconds
+>>> cache
+LiteCache(db=test.db, ttl=600, save_on_exit:True)
 ```
 
 **Checking for Key**
@@ -52,4 +58,7 @@ False
 ```python
 >>> cache.set('test', {'test': 1})
 >>> cache.save()
+>>> cache.rollback()
+>>> 'test' in cache
+True
 ```
