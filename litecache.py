@@ -62,7 +62,7 @@ class LiteCache:
 
     def __del__(self):
         '''
-        Close the DB connection cleanly, saving is desired
+        Close the DB connection cleanly, saving if desired
         '''
         if self._conn:
             if self.save_on_exit:

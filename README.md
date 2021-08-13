@@ -49,6 +49,7 @@ True
 
 **Rolling Back Key Sets**
 ```python
+>>> cache.set('test', {'test': 1})
 >>> cache.rollback()
 >>> 'test' in cache
 False
