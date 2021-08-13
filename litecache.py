@@ -4,7 +4,14 @@ import sqlite3
 from typing import Any, Optional
 
 
-__version__ = '21.8.6.0'
+# Limit what gets imported via *
+__all__ = [
+    '__version__',
+    'LiteCache'
+]
+
+
+__version__ = '21.8.13.0'
 
 
 ONE_DAY_SECONDS = 24 * 60 * 60
@@ -24,6 +31,13 @@ class NotSet:
 
 
 class LiteCache:
+
+    # The limited set of attributes used
+    __slots__ = [
+        '_db',
+        '_conn',
+        'ttl'
+    ]
 
     def __init__(
         self,
