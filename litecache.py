@@ -11,7 +11,7 @@ __all__ = [
 ]
 
 
-__version__ = '21.8.13.1'
+__version__ = '21.8.14.0'
 
 
 ONE_DAY_SECONDS = 24 * 60 * 60
@@ -22,6 +22,7 @@ SQL_TABLE_CREATE = 'CREATE TABLE IF NOT EXISTS `litecache` (`key` TEXT UNIQUE, `
 SQL_INDEX_CREATE = 'CREATE INDEX IF NOT EXISTS `last_seen_idx` ON `litecache` (`last_seen`);'
 SQL_ADD_UPDATE_KEY = 'INSERT OR REPLACE INTO `litecache` (`key`, `value`, `last_seen`) VALUES (?, ?, ?);'
 SQL_GET_KEY_SINCE = 'SELECT `value` FROM `litecache` WHERE `key` = ? AND `last_seen` >= ?;'
+SQL_DELETE_KEY = 'DELETE FROM `litecache` WHERE `key` = ?;'
 SQL_CLEAR = 'DELETE * FROM `litecache`;'
 
 
@@ -195,6 +196,14 @@ class LiteCache:
 
         # Add the data to the DB
         self._connection.execute(SQL_ADD_UPDATE_KEY, (key, memoryview(data), last_seen))
+
+    def delete(self, key: str) -> None:
+        '''
+        Delete the key in the cache
+        '''
+
+        # Delete the data from the DB
+        self._connection.execute(SQL_DELETE_KEY, (key,))
 
     def clear(self) -> None:
         '''
