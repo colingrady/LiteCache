@@ -11,7 +11,7 @@ __all__ = [
 ]
 
 
-__version__ = '21.8.14.0'
+__version__ = '21.8.26.0'
 
 
 ONE_DAY_SECONDS = 24 * 60 * 60
@@ -41,12 +41,12 @@ class LiteCache:
         'save_on_exit'
     ]
 
-    def __init__(
-        self,
-        cache_db: Optional[str] = None,
-        ttl: Optional[int] = DEFAULT_TTL,
-        save_on_exit: Optional[bool] = True
-    ):
+    def __init__(self, cache_db: Optional[str] = None,
+                 ttl: Optional[int] = DEFAULT_TTL,
+                 save_on_exit: Optional[bool] = True):
+        '''
+        Setup a new LiteCache object
+        '''
 
         # Get the cache file
         cache_db = cache_db or ':memory:'
@@ -148,7 +148,7 @@ class LiteCache:
         '''
         self._connection.rollback()
 
-    def has(self, key, ttl: Optional[int] = None) -> bool:
+    def has(self, key: str, ttl: Optional[int] = None) -> bool:
         '''
         Return True/False if a key exists
         '''
@@ -160,7 +160,8 @@ class LiteCache:
         # Return whether it exists
         return row is not None
 
-    def get(self, key, default: Optional[Any] = NotSet, ttl: Optional[int] = None) -> Any:
+    def get(self, key: str, default: Optional[Any] = NotSet,
+            ttl: Optional[int] = None) -> Any:
         '''
         Get the key value from the cache
         '''
