@@ -5,13 +5,13 @@ from typing import Any, Optional
 
 
 # Limit what gets imported via *
-__all__ = [
+__all__ = (
     '__version__',
     'LiteCache'
-]
+)
 
 
-__version__ = '21.8.26.0'
+__version__ = '21.9.21.0'
 
 
 ONE_DAY_SECONDS = 24 * 60 * 60
@@ -22,24 +22,24 @@ SQL_TABLE_CREATE = 'CREATE TABLE IF NOT EXISTS `litecache` (`key` TEXT UNIQUE, `
 SQL_INDEX_CREATE = 'CREATE INDEX IF NOT EXISTS `last_seen_idx` ON `litecache` (`last_seen`);'
 SQL_ADD_UPDATE_KEY = 'INSERT OR REPLACE INTO `litecache` (`key`, `value`, `last_seen`) VALUES (?, ?, ?);'
 SQL_GET_KEY_SINCE = 'SELECT `value` FROM `litecache` WHERE `key` = ? AND `last_seen` >= ?;'
+SQL_UPDATE_KEY_LAST_SEEN = 'UPDATE `litecache` SET `last_seen` = ? WHERE `key` = ?;'
 SQL_DELETE_KEY = 'DELETE FROM `litecache` WHERE `key` = ?;'
 SQL_CLEAR = 'DELETE * FROM `litecache`;'
 
 
 class NotSet:
-    def __repr__(self):
-        return 'NotSet'
+    __slots__ = ()
 
 
 class LiteCache:
 
     # The limited set of attributes used
-    __slots__ = [
+    __slots__ = (
         '_conn',
         'db',
         'ttl',
         'save_on_exit'
-    ]
+    )
 
     def __init__(self, cache_db: Optional[str] = None,
                  ttl: Optional[int] = DEFAULT_TTL,
@@ -197,6 +197,17 @@ class LiteCache:
 
         # Add the data to the DB
         self._connection.execute(SQL_ADD_UPDATE_KEY, (key, memoryview(data), last_seen))
+
+    def expire(self, key: str) -> None:
+        '''
+        Expire the key in the cache
+        '''
+
+        # Get the new last_seen time
+        last_seen = self._now() - 1
+
+        # Set the last_seen time to now - 1
+        self._connection.execute(SQL_UPDATE_KEY_LAST_SEEN, (last_seen, key))
 
     def delete(self, key: str) -> None:
         '''
